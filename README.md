@@ -100,7 +100,20 @@ Empty directories for learning materials:
 
 ## Using It
 
-### 1. Fill in AGENTS.md
+### Standalone Mode
+
+After running the script, your project has:
+
+```
+.
+├── AGENTS.md                    ← Fill this with project details
+└── .agent/
+    ├── rules/                   ← 5 empty templates, fill these
+    ├── skills/                  ← Empty, add skills over time
+    └── examples/                ← Empty, add examples over time
+```
+
+**Step 1: Fill in AGENTS.md**
 
 Replace the placeholder comments with your project details:
 ```markdown
@@ -115,7 +128,7 @@ pnpm dev
 pnpm test
 ```
 
-### 2. Fill in Rule Files
+**Step 2: Fill in Rule Files**
 
 Edit each file in `.agent/rules/`:
 - `coding-style.md` — Your language-specific conventions
@@ -124,13 +137,55 @@ Edit each file in `.agent/rules/`:
 - `git-workflow.md` — Your branch/commit conventions
 - `domain-glossary.md` — Your project-specific terms
 
-### 3. Build Your Skills Library
+**Step 3: Build Your Skills Library**
 
 Create skills in `.agent/skills/` as you discover repeatable patterns.
 
-### 4. Add Examples
+**Step 4: Add Examples**
 
 In `.agent/examples/good/` and `.agent/examples/bad/`, add real code from your project to teach AI agents what to follow and what to avoid.
+
+### Team Mode
+
+After running the script with `--team`, your project has:
+
+```
+.
+├── AGENTS.md                    ← Fill this with project details (project-specific)
+├── .agent → submodule           ← Team shared rules (DO NOT edit here directly)
+│   ├── rules/
+│   ├── skills/
+│   └── examples/
+└── .agent-project/
+    └── rules/
+        └── domain-glossary.md   ← Fill this with project-specific glossary
+```
+
+**Step 1: Fill in AGENTS.md**
+
+Same as standalone mode — describe your project overview, build commands, boundaries, and gotchas.
+
+**Step 2: Fill in Project-Specific Rules**
+
+Edit `.agent-project/rules/domain-glossary.md` with your project's terminology. You can also add more project-specific rule files here.
+
+**Step 3: Use Team Shared Rules**
+
+Rules, skills, and examples in `.agent/` come from your team's shared repository. **Do not edit them directly** — changes should be made in the team repo.
+
+**Step 4: Update Team Rules**
+
+When the team repo is updated, pull the latest:
+```bash
+git submodule update --remote .agent
+git commit -am 'chore: update team agent rules'
+```
+
+**Step 5: Commit**
+```bash
+git add -A
+git commit -m 'chore: initialize agent-friendly structure'
+```
 
 ## Best Practices
 

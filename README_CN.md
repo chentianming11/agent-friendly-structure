@@ -100,7 +100,20 @@ git commit -am 'chore: 更新团队 agent 规则'
 
 ## 使用方法
 
-### 1. 填写 AGENTS.md
+### 独立模式
+
+运行脚本后，你的项目结构如下：
+
+```
+.
+├── AGENTS.md                    ← 填写项目详情
+└── .agent/
+    ├── rules/                   ← 5 个空模板，需要填写
+    ├── skills/                  ← 空目录，逐步添加技能
+    └── examples/                ← 空目录，逐步添加示例
+```
+
+**第 1 步：填写 AGENTS.md**
 
 将占位注释替换为你的项目详情：
 ```markdown
@@ -115,7 +128,7 @@ pnpm dev
 pnpm test
 ```
 
-### 2. 填写规则文件
+**第 2 步：填写规则文件**
 
 编辑 `.agent/rules/` 中的每个文件：
 - `coding-style.md` — 你的语言特定约定
@@ -124,13 +137,55 @@ pnpm test
 - `git-workflow.md` — 你的分支/提交约定
 - `domain-glossary.md` — 你的项目特定术语
 
-### 3. 构建你的技能库
+**第 3 步：构建技能库**
 
 当你发现可复用的模式时，在 `.agent/skills/` 中创建技能。
 
-### 4. 添加示例
+**第 4 步：添加示例**
 
 在 `.agent/examples/good/` 和 `.agent/examples/bad/` 中，添加来自你项目的真实代码，教 AI agent 什么该遵循、什么该避免。
+
+### 团队模式
+
+使用 `--team` 参数运行脚本后，你的项目结构如下：
+
+```
+.
+├── AGENTS.md                    ← 填写项目详情（项目专属）
+├── .agent → submodule           ← 团队共享规则（不要直接编辑）
+│   ├── rules/
+│   ├── skills/
+│   └── examples/
+└── .agent-project/
+    └── rules/
+        └── domain-glossary.md   ← 填写项目专属术语表
+```
+
+**第 1 步：填写 AGENTS.md**
+
+与独立模式相同 — 描述项目概述、构建命令、边界规则和陷阱。
+
+**第 2 步：填写项目专属规则**
+
+编辑 `.agent-project/rules/domain-glossary.md`，填写你项目的术语。也可以在这里添加更多项目专属规则文件。
+
+**第 3 步：使用团队共享规则**
+
+`.agent/` 中的规则、技能和示例来自团队共享仓库。**不要直接编辑** — 修改应在团队仓库中进行。
+
+**第 4 步：更新团队规则**
+
+当团队仓库更新后，拉取最新内容：
+```bash
+git submodule update --remote .agent
+git commit -am 'chore: 更新团队 agent 规则'
+```
+
+**第 5 步：提交**
+```bash
+git add -A
+git commit -m 'chore: 初始化 agent 友好的结构'
+```
 
 ## 最佳实践
 

@@ -1,0 +1,21 @@
+README.md
+  s_cdbbd9845fe5fd::t_d5019aaa9495e8 97-125
+README_CN.md
+  s_cdbbd9845fe5fd::t_78e897f776a08d 97-125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "277313870e5daa8c849024cc1245245571662771",
+  "prompts": {},
+  "sessions": {
+    "s_cdbbd9845fe5fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0053145-91d9-4604-abe2-44aee6f345d1",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "tm.chen <tm.chen@trip.com>"
+    }
+  }
+}

@@ -1,5 +1,7 @@
 # Agent-Friendly Structure
 
+[中文文档](./README_CN.md)
+
 A simple, practical tool for initializing AI-friendly project structures.
 
 ## Quick Start
@@ -42,22 +44,6 @@ Uses git submodule to link a shared team rules repository. Perfect when multiple
 git submodule update --remote .agent
 git commit -am 'chore: update team agent rules'
 ```
-
-## About AGENTS.md
-
-AGENTS.md is a universal AI agent instruction file (OpenAI Codex standard). Depending on your AI coding tool, you may want to rename it:
-
-| Tool | File name |
-|------|-----------|
-| OpenAI Codex | `AGENTS.md` (default) |
-| Claude Code | `CLAUDE.md` |
-| Cursor | `.cursorrules` |
-| Windsurf | `.windsurfrules` |
-| GitHub Copilot | `.github/copilot-instructions.md` |
-| Cline | `.clinerules` |
-| Aider | `CONVENTIONS.md` |
-
-Just rename AGENTS.md after generation, or keep it if your tool supports it.
 
 ## What It Does
 

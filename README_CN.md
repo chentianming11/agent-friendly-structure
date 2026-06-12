@@ -1,5 +1,7 @@
 # Agent-Friendly Structure
 
+[English Documentation](./README.md)
+
 一个简单、实用的工具，用于初始化 AI 友好的项目结构。
 
 ## 快速开始
@@ -42,22 +44,6 @@ curl -sSL https://raw.githubusercontent.com/chentianming11/agent-friendly-struct
 git submodule update --remote .agent
 git commit -am 'chore: 更新团队 agent 规则'
 ```
-
-## 关于 AGENTS.md
-
-AGENTS.md 是通用的 AI agent 指令文件（OpenAI Codex 标准）。根据你使用的 AI 编码工具，可能需要重命名：
-
-| 工具 | 文件名 |
-|------|--------|
-| OpenAI Codex | `AGENTS.md`（默认） |
-| Claude Code | `CLAUDE.md` |
-| Cursor | `.cursorrules` |
-| Windsurf | `.windsurfrules` |
-| GitHub Copilot | `.github/copilot-instructions.md` |
-| Cline | `.clinerules` |
-| Aider | `CONVENTIONS.md` |
-
-生成后直接重命名 AGENTS.md，或者如果你的工具支持就保留它。
 
 ## 做了什么
 

@@ -174,19 +174,6 @@ EOF
 
   echo -e "${GREEN}✓ Created .agent/rules/ (5 empty templates)${NC}"
 
-  # Create examples skeletons
-  cat > .agent/examples/good/example.md << 'EOF'
-# Good Examples
-
-<!-- Add good code patterns from your project here -->
-EOF
-
-  cat > .agent/examples/bad/example.md << 'EOF'
-# Bad Examples
-
-<!-- Add anti-patterns and lessons learned here -->
-EOF
-
   echo -e "${GREEN}✓ Created .agent/examples/{good,bad}${NC}"
 
   echo ""

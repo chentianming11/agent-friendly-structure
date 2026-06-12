@@ -94,9 +94,35 @@ Empty directory. Add reusable skill templates as you build them:
 ```
 
 ### .agent/examples/
-Empty directories for learning materials:
-- **good/** — Code patterns to follow
-- **bad/** — Anti-patterns to avoid
+Empty directories for real code examples from your project:
+- **good/** — Actual code that demonstrates best practices
+- **bad/** — Actual code that shows anti-patterns to avoid
+
+**What to put here:** Real source files (not markdown) that AI agents can learn from. Include a brief comment at the top explaining why it's good or bad.
+
+**Example - good/error-handling.ts:**
+```typescript
+// Good: Proper error handling with meaningful messages
+export async function fetchUser(id: string): Promise<User> {
+  const user = await db.users.findById(id);
+  if (!user) {
+    throw new UserNotFoundError(`User ${id} not found`);
+  }
+  return user;
+}
+```
+
+**Example - bad/error-handling.ts:**
+```typescript
+// Bad: Silent failure makes debugging impossible
+export async function fetchUser(id: string): Promise<User> {
+  try {
+    return await db.users.findById(id);
+  } catch (e) {
+    return null;
+  }
+}
+```
 
 ## Using It
 

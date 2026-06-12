@@ -174,19 +174,6 @@ EOF
 
   echo -e "${GREEN}✓ 已创建 .agent/rules/ (5 个空模板)${NC}"
 
-  # 创建示例骨架
-  cat > .agent/examples/good/example.md << 'EOF'
-# 好的示例
-
-<!-- 在此添加项目中好的代码模式 -->
-EOF
-
-  cat > .agent/examples/bad/example.md << 'EOF'
-# 坏的示例
-
-<!-- 在此添加反模式和踩过的坑 -->
-EOF
-
   echo -e "${GREEN}✓ 已创建 .agent/examples/{good,bad}${NC}"
 
   echo ""

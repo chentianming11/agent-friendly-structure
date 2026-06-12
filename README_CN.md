@@ -94,9 +94,35 @@ git commit -am 'chore: 更新团队 agent 规则'
 ```
 
 ### .agent/examples/
-空目录，用于学习材料：
-- **good/** — 要遵循的代码模式
-- **bad/** — 要避免的反模式
+空目录，用于存放项目中的真实代码示例：
+- **good/** — 展示最佳实践的实际代码
+- **bad/** — 展示反模式的实际代码
+
+**应该放什么：** 真实的源代码文件（不是 markdown），AI agent 可以从中学习。在文件顶部添加简短注释说明为什么好或坏。
+
+**示例 - good/error-handling.ts:**
+```typescript
+// 好的做法：带有有意义消息的错误处理
+export async function fetchUser(id: string): Promise<User> {
+  const user = await db.users.findById(id);
+  if (!user) {
+    throw new UserNotFoundError(`User ${id} not found`);
+  }
+  return user;
+}
+```
+
+**示例 - bad/error-handling.ts:**
+```typescript
+// 坏的做法：静默失败导致调试困难
+export async function fetchUser(id: string): Promise<User> {
+  try {
+    return await db.users.findById(id);
+  } catch (e) {
+    return null;
+  }
+}
+```
 
 ## 使用方法
 

@@ -24,25 +24,25 @@ Done. No other parameters needed.
 Creates empty templates in your project. You fill in all rules yourself.
 
 ### Team Mode
-Uses git submodule to link a shared team rules repository. Perfect when multiple projects share the same coding standards, testing practices, and security guidelines.
+Uses **git subtree** to vendor a shared team rules repository into `.agents/`. Perfect when multiple projects share the same coding standards, testing practices, and security guidelines. Unlike submodules, the rules are real files in your repo — a plain `git clone` ships them, no `git submodule init` needed.
 
 **Team mode creates:**
 ```
 .
-├── AGENTS.md                    ← Project-specific (you fill this)
-├── .agent → submodule           ← Team shared rules (from your team repo)
-│   ├── rules/
-│   ├── skills/
-│   └── examples/
-└── .agent-project/
+├── AGENTS.md                    ← Project entry point (Cursor/Copilot auto-load; you fill this)
+├── CLAUDE.md                    ← One-line bridge `@AGENTS.md` so Claude Code reads AGENTS.md
+├── .agents/                     ← Team shared rules vendored via git subtree (real files, not a pointer)
+│   ├── rules/                   ← Shared rule files (changes should go to the team repo, then `subtree pull`)
+│   ├── skills/                  ← Shared reusable skill templates
+│   └── examples/                ← Shared good/bad code patterns
+└── .agents-project/             ← Project-specific overrides (lives in this repo)
     └── rules/
-        └── domain-glossary.md   ← Project-specific glossary
+        └── domain-glossary.md   ← Project-specific terminology (you fill this)
 ```
 
-**Update team rules:**
+**Pull updates from the team repo:**
 ```bash
-git submodule update --remote .agent
-git commit -am 'chore: update team agent rules'
+git subtree pull --prefix=.agents <team-repo-url> <branch> --squash
 ```
 
 ## What It Does
@@ -51,18 +51,19 @@ Creates the skeleton structure:
 
 ```
 .
-├── AGENTS.md                    ← Project entry point for AI agents
-├── .agent/
-│   ├── rules/                   ← Empty templates for your team rules
-│   │   ├── coding-style.md
-│   │   ├── testing.md
-│   │   ├── security.md
-│   │   ├── git-workflow.md
-│   │   └── domain-glossary.md
-│   ├── skills/                  ← Add your reusable skills here
-│   └── examples/                ← Add good/bad code patterns here
-│       ├── good/
-│       └── bad/
+├── AGENTS.md                    ← Project entry point for AI agents (Cursor, Copilot, etc. auto-load)
+├── CLAUDE.md                    ← One-line bridge for Claude Code: `@AGENTS.md`
+├── .agents/                     ← Everything agents need to know about your project
+│   ├── rules/                   ← Authoritative project rules (read on demand)
+│   │   ├── coding-style.md      ← Code conventions and style
+│   │   ├── testing.md           ← Testing standards and patterns
+│   │   ├── security.md          ← Security requirements and checklists
+│   │   ├── git-workflow.md      ← Branching, commits, PR conventions
+│   │   └── domain-glossary.md   ← Project-specific terminology
+│   ├── skills/                  ← Reusable skill templates (load on demand when matching task)
+│   └── examples/                ← Real code patterns from your project
+│       ├── good/                ← Patterns to follow
+│       └── bad/                 ← Anti-patterns to avoid
 ```
 
 All files are empty templates — you fill in the content that fits your project.
@@ -70,11 +71,17 @@ All files are empty templates — you fill in the content that fits your project
 ## Core Concepts
 
 ### AGENTS.md
-- **Single entry point** for all AI agents
-- Sections for project overview, build commands, boundaries, and links
+- **Single entry point** for all AI agents (cross-tool standard)
+- Sections for project overview, build commands, boundaries, and pointers to `.agents/rules/` and `.agents/skills/`
 - Keep it under 200 lines
+- Does **not** hardcode every rule filename — agents read `.agents/rules/` on demand, so you can add or remove rule files without editing AGENTS.md
 
-### .agent/rules/
+### CLAUDE.md
+- A single-line file: `@AGENTS.md`
+- Claude Code does not auto-load `AGENTS.md` natively — `CLAUDE.md` with the `@import` syntax brings the same content into Claude Code's session context at launch
+- Cursor, GitHub Copilot, and other agents read `AGENTS.md` directly and ignore `CLAUDE.md`
+
+### .agents/rules/
 Five empty templates ready for your team's rules:
 - **coding-style.md** — Code conventions and best practices
 - **testing.md** — Testing standards and patterns
@@ -82,18 +89,18 @@ Five empty templates ready for your team's rules:
 - **git-workflow.md** — Git conventions and PR process
 - **domain-glossary.md** — Project-specific terminology
 
-### .agent/skills/
+### .agents/skills/
 Empty directory. Add reusable skill templates as you build them:
 ```
-.agent/skills/
-└── my-skill/
-    ├── SKILL.md              # Metadata (name, description)
-    ├── references/           # Detailed documentation
-    ├── assets/               # Templates and code snippets
-    └── scripts/              # Executable examples
+.agents/skills/
+└── my-skill/                    ← One directory per skill
+    ├── SKILL.md                 ← Skill metadata (name, when to use, description)
+    ├── references/              ← Detailed documentation the skill cites
+    ├── assets/                  ← Templates and code snippets the skill applies
+    └── scripts/                 ← Executable helpers / runnable examples
 ```
 
-### .agent/examples/
+### .agents/examples/
 Empty directories for real code examples from your project:
 - **good/** — Actual code that demonstrates best practices
 - **bad/** — Actual code that shows anti-patterns to avoid
@@ -124,95 +131,6 @@ export async function fetchUser(id: string): Promise<User> {
 }
 ```
 
-## Using It
-
-### Standalone Mode
-
-After running the script, your project has:
-
-```
-.
-├── AGENTS.md                    ← Fill this with project details
-└── .agent/
-    ├── rules/                   ← 5 empty templates, fill these
-    ├── skills/                  ← Empty, add skills over time
-    └── examples/                ← Empty, add examples over time
-```
-
-**Step 1: Fill in AGENTS.md**
-
-Replace the placeholder comments with your project details:
-```markdown
-# Project Overview
-
-An e-commerce API built with Node.js and PostgreSQL.
-
-# Build & Test Commands
-
-pnpm install
-pnpm dev
-pnpm test
-```
-
-**Step 2: Fill in Rule Files**
-
-Edit each file in `.agent/rules/`:
-- `coding-style.md` — Your language-specific conventions
-- `testing.md` — Your coverage targets and patterns
-- `security.md` — Your security requirements
-- `git-workflow.md` — Your branch/commit conventions
-- `domain-glossary.md` — Your project-specific terms
-
-**Step 3: Build Your Skills Library**
-
-Create skills in `.agent/skills/` as you discover repeatable patterns.
-
-**Step 4: Add Examples**
-
-In `.agent/examples/good/` and `.agent/examples/bad/`, add real code from your project to teach AI agents what to follow and what to avoid.
-
-### Team Mode
-
-After running the script with `--team`, your project has:
-
-```
-.
-├── AGENTS.md                    ← Fill this with project details (project-specific)
-├── .agent → submodule           ← Team shared rules (DO NOT edit here directly)
-│   ├── rules/
-│   ├── skills/
-│   └── examples/
-└── .agent-project/
-    └── rules/
-        └── domain-glossary.md   ← Fill this with project-specific glossary
-```
-
-**Step 1: Fill in AGENTS.md**
-
-Same as standalone mode — describe your project overview, build commands, boundaries, and gotchas.
-
-**Step 2: Fill in Project-Specific Rules**
-
-Edit `.agent-project/rules/domain-glossary.md` with your project's terminology. You can also add more project-specific rule files here.
-
-**Step 3: Use Team Shared Rules**
-
-Rules, skills, and examples in `.agent/` come from your team's shared repository. **Do not edit them directly** — changes should be made in the team repo.
-
-**Step 4: Update Team Rules**
-
-When the team repo is updated, pull the latest:
-```bash
-git submodule update --remote .agent
-git commit -am 'chore: update team agent rules'
-```
-
-**Step 5: Commit**
-```bash
-git add -A
-git commit -m 'chore: initialize agent-friendly structure'
-```
-
 ## Best Practices
 
 - **Keep AGENTS.md lean** — under 200 lines, link to detailed rules
@@ -220,16 +138,41 @@ git commit -m 'chore: initialize agent-friendly structure'
 - **Grow skills over time** — add as you build
 - **Add real examples** — from your actual codebase
 
+### How agents decide to load `.agents/rules/*.md`
+
+Files under `.agents/rules/` are **not** preloaded into the agent's context at session start. Both Claude Code and Cursor read them **on demand**, and the agent's decision relies on two signals:
+
+1. **The pointer in `AGENTS.md`** — the script writes a clear instruction telling the agent to treat `.agents/rules/` as authoritative project rules. Don't water it down.
+2. **The filename itself** — the agent matches the current task against the filename to decide whether to open the file.
+
+Practical implications:
+
+- ✅ **Use self-describing filenames**: `coding-style.md`, `testing.md`, `pr-review.md`, `kafka-conventions.md`. Generic names like `rules1.md`, `notes.md`, or `misc.md` rarely get read because nothing tells the model when they apply.
+- ✅ **Put domain-specific rules in topic-named files**, not buried in a catch-all.
+- ⚠️ **Want a rule loaded every single session?** Inline it in `AGENTS.md` itself — that's the only thing both tools auto-load.
+
+### Don't leave the HTML-comment placeholders empty
+
+The script seeds `AGENTS.md` with `<!-- ... -->` placeholders. Note:
+
+- **Cursor** sees these comments as-is — harmless but pointless.
+- **Claude Code** strips block-level HTML comments before injecting CLAUDE.md/AGENTS.md into context ([official docs](https://code.claude.com/docs/en/memory)). That means if you leave a section as just `<!-- Add your rules -->`, **Claude Code sees an empty section**.
+
+Always replace the comment placeholders with real content. The comments are scaffolding, not actual instructions to the agent.
+
 ## FAQ
 
 **Q: Do I need to specify my tech stack?**
 A: No. The templates are language-agnostic — fill them in for your stack.
 
 **Q: Can I delete rule files I don't need?**
-A: Yes. Remove any file and update the link in AGENTS.md.
+A: Yes. Just remove the file. AGENTS.md points at the `.agents/rules/` directory as a whole, so no AGENTS.md edit is needed.
 
 **Q: Can I add more rule files?**
-A: Yes. Create new `.md` files in `.agent/rules/` and link them from AGENTS.md.
+A: Yes. Drop new `.md` files into `.agents/rules/`. Agents read the directory on demand — AGENTS.md does not need to list each file.
+
+**Q: Why is there a `CLAUDE.md` with just `@AGENTS.md`?**
+A: Claude Code does not auto-load `AGENTS.md` ([official docs](https://code.claude.com/docs/en/memory)). The `@AGENTS.md` import is the official way to make Claude Code pick it up. Cursor, Copilot, and other agents read `AGENTS.md` directly and ignore `CLAUDE.md`.
 
 ## Repository
 

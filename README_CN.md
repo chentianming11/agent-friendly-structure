@@ -24,25 +24,25 @@ curl -sSL https://raw.githubusercontent.com/chentianming11/agent-friendly-struct
 在项目中创建空模板。所有规则由你自己填写。
 
 ### 团队模式
-使用 git submodule 链接团队共享规则仓库。当多个项目共享相同的编码规范、测试实践和安全指南时非常适用。
+使用 **git subtree** 把团队共享规则仓库内嵌到 `.agents/` 目录。当多个项目共享相同的编码规范、测试实践和安全指南时非常适用。与 submodule 不同，规则文件就是仓库里的普通文件——`git clone` 直接拿到，无需 `git submodule init`。
 
 **团队模式创建：**
 ```
 .
-├── AGENTS.md                    ← 项目专属（你来填写）
-├── .agent → submodule           ← 团队共享规则（来自你的团队仓库）
-│   ├── rules/
-│   ├── skills/
-│   └── examples/
-└── .agent-project/
+├── AGENTS.md                    ← 项目入口（Cursor/Copilot 自动加载；由你填写）
+├── CLAUDE.md                    ← 一行桥接 `@AGENTS.md`，让 Claude Code 读取 AGENTS.md
+├── .agents/                     ← 通过 git subtree 嵌入的团队共享规则（真实文件，不是指针）
+│   ├── rules/                   ← 共享规则文件（改动应提交到团队仓库，然后 `subtree pull`）
+│   ├── skills/                  ← 共享的可复用技能模板
+│   └── examples/                ← 共享的好/坏代码示例
+└── .agents-project/             ← 项目专属覆盖（保留在本仓库内）
     └── rules/
-        └── domain-glossary.md   ← 项目专属术语表
+        └── domain-glossary.md   ← 项目专属术语表（由你填写）
 ```
 
-**更新团队规则：**
+**从团队仓库拉取最新规则：**
 ```bash
-git submodule update --remote .agent
-git commit -am 'chore: 更新团队 agent 规则'
+git subtree pull --prefix=.agents <团队仓库 URL> <分支> --squash
 ```
 
 ## 做了什么
@@ -51,18 +51,19 @@ git commit -am 'chore: 更新团队 agent 规则'
 
 ```
 .
-├── AGENTS.md                    ← AI agent 的项目入口点
-├── .agent/
-│   ├── rules/                   ← 空模板，由你填写团队规则
-│   │   ├── coding-style.md
-│   │   ├── testing.md
-│   │   ├── security.md
-│   │   ├── git-workflow.md
-│   │   └── domain-glossary.md
-│   ├── skills/                  ← 在此添加你的可复用技能
-│   └── examples/                ← 在此添加好/坏代码模式
-│       ├── good/
-│       └── bad/
+├── AGENTS.md                    ← AI agent 的项目入口点（Cursor、Copilot 等会自动加载）
+├── CLAUDE.md                    ← 仅一行的桥接文件：`@AGENTS.md`，供 Claude Code 使用
+├── .agents/                     ← Agent 需要了解的项目信息全部放在这里
+│   ├── rules/                   ← 项目权威规则（按需读取）
+│   │   ├── coding-style.md      ← 代码约定与风格
+│   │   ├── testing.md           ← 测试标准与模式
+│   │   ├── security.md          ← 安全要求与检查清单
+│   │   ├── git-workflow.md      ← 分支、提交、PR 流程
+│   │   └── domain-glossary.md   ← 项目特定术语
+│   ├── skills/                  ← 可复用技能模板（任务匹配时按需加载）
+│   └── examples/                ← 项目中真实的代码示例
+│       ├── good/                ← 要遵循的模式
+│       └── bad/                 ← 要避免的反模式
 ```
 
 所有文件都是空模板 — 由你填写适合项目的内容。
@@ -70,11 +71,17 @@ git commit -am 'chore: 更新团队 agent 规则'
 ## 核心概念
 
 ### AGENTS.md
-- 所有 AI agent 的**唯一入口**
-- 包含项目概述、构建命令、边界规则和链接等章节
+- 所有 AI agent 的**唯一入口**（跨工具标准）
+- 包含项目概述、构建命令、边界规则，以及指向 `.agents/rules/` 和 `.agents/skills/` 的引导
 - 保持在 200 行以内
+- **不会硬编码**每个规则文件名 — Agent 会按需读取 `.agents/rules/` 目录，所以新增/删除规则文件时无需修改 AGENTS.md
 
-### .agent/rules/
+### CLAUDE.md
+- 内容只有一行：`@AGENTS.md`
+- Claude Code 默认**不会**自动加载 `AGENTS.md`，需通过 `CLAUDE.md` 中的 `@import` 语法在会话启动时引入
+- Cursor、GitHub Copilot 等 Agent 会直接读取 `AGENTS.md`，并忽略 `CLAUDE.md`
+
+### .agents/rules/
 五个空模板，用于填写你团队的规则：
 - **coding-style.md** — 代码约定和最佳实践
 - **testing.md** — 测试标准和模式
@@ -82,18 +89,18 @@ git commit -am 'chore: 更新团队 agent 规则'
 - **git-workflow.md** — Git 约定和 PR 流程
 - **domain-glossary.md** — 项目特定术语
 
-### .agent/skills/
+### .agents/skills/
 空目录。在构建过程中添加可复用的技能模板：
 ```
-.agent/skills/
-└── my-skill/
-    ├── SKILL.md              # 元数据（名称、描述）
-    ├── references/           # 详细文档
-    ├── assets/               # 模板和代码片段
-    └── scripts/              # 可执行示例
+.agents/skills/
+└── my-skill/                    ← 每个技能一个目录
+    ├── SKILL.md                 ← 技能元数据（名称、何时使用、描述）
+    ├── references/              ← 技能引用的详细文档
+    ├── assets/                  ← 技能要应用的模板和代码片段
+    └── scripts/                 ← 可执行辅助脚本 / 可运行示例
 ```
 
-### .agent/examples/
+### .agents/examples/
 空目录，用于存放项目中的真实代码示例：
 - **good/** — 展示最佳实践的实际代码
 - **bad/** — 展示反模式的实际代码
@@ -124,95 +131,6 @@ export async function fetchUser(id: string): Promise<User> {
 }
 ```
 
-## 使用方法
-
-### 独立模式
-
-运行脚本后，你的项目结构如下：
-
-```
-.
-├── AGENTS.md                    ← 填写项目详情
-└── .agent/
-    ├── rules/                   ← 5 个空模板，需要填写
-    ├── skills/                  ← 空目录，逐步添加技能
-    └── examples/                ← 空目录，逐步添加示例
-```
-
-**第 1 步：填写 AGENTS.md**
-
-将占位注释替换为你的项目详情：
-```markdown
-# 项目概述
-
-一个基于 Node.js 和 PostgreSQL 的电商 API。
-
-# 构建和测试命令
-
-pnpm install
-pnpm dev
-pnpm test
-```
-
-**第 2 步：填写规则文件**
-
-编辑 `.agent/rules/` 中的每个文件：
-- `coding-style.md` — 你的语言特定约定
-- `testing.md` — 你的覆盖率目标和模式
-- `security.md` — 你的安全要求
-- `git-workflow.md` — 你的分支/提交约定
-- `domain-glossary.md` — 你的项目特定术语
-
-**第 3 步：构建技能库**
-
-当你发现可复用的模式时，在 `.agent/skills/` 中创建技能。
-
-**第 4 步：添加示例**
-
-在 `.agent/examples/good/` 和 `.agent/examples/bad/` 中，添加来自你项目的真实代码，教 AI agent 什么该遵循、什么该避免。
-
-### 团队模式
-
-使用 `--team` 参数运行脚本后，你的项目结构如下：
-
-```
-.
-├── AGENTS.md                    ← 填写项目详情（项目专属）
-├── .agent → submodule           ← 团队共享规则（不要直接编辑）
-│   ├── rules/
-│   ├── skills/
-│   └── examples/
-└── .agent-project/
-    └── rules/
-        └── domain-glossary.md   ← 填写项目专属术语表
-```
-
-**第 1 步：填写 AGENTS.md**
-
-与独立模式相同 — 描述项目概述、构建命令、边界规则和陷阱。
-
-**第 2 步：填写项目专属规则**
-
-编辑 `.agent-project/rules/domain-glossary.md`，填写你项目的术语。也可以在这里添加更多项目专属规则文件。
-
-**第 3 步：使用团队共享规则**
-
-`.agent/` 中的规则、技能和示例来自团队共享仓库。**不要直接编辑** — 修改应在团队仓库中进行。
-
-**第 4 步：更新团队规则**
-
-当团队仓库更新后，拉取最新内容：
-```bash
-git submodule update --remote .agent
-git commit -am 'chore: 更新团队 agent 规则'
-```
-
-**第 5 步：提交**
-```bash
-git add -A
-git commit -m 'chore: 初始化 agent 友好的结构'
-```
-
 ## 最佳实践
 
 - **保持 AGENTS.md 精简** — 200 行以内，链接到详细规则
@@ -220,16 +138,41 @@ git commit -m 'chore: 初始化 agent 友好的结构'
 - **逐步增长技能** — 随着构建而添加
 - **添加真实示例** — 来自你实际的代码库
 
+### Agent 如何决定加载 `.agents/rules/*.md`
+
+`.agents/rules/` 下的文件**不会**在会话启动时被预加载到 Agent 的 context 里。Claude Code 和 Cursor 都是**按需读取**，而 Agent 是否决定打开某个文件，依赖两个信号：
+
+1. **AGENTS.md 中的引导语** —— 脚本里写了"把 `.agents/rules/` 视为项目权威规则"这样的明确说明，请不要削弱它。
+2. **文件名本身** —— Agent 会用当前任务和文件名做语义匹配，来判断要不要读这个文件。
+
+实操含义：
+
+- ✅ **使用自描述的文件名**：`coding-style.md`、`testing.md`、`pr-review.md`、`kafka-conventions.md`。像 `rules1.md`、`notes.md`、`misc.md` 这类泛化名字几乎不会被读取——模型猜不出它们什么时候适用。
+- ✅ **领域专属规则放进主题命名的文件**，不要堆进一个杂物篮。
+- ⚠️ **想让某条规则每次会话都被加载？** 把它直接写进 `AGENTS.md` 正文——那是两边工具唯一会自动加载的内容。
+
+### 不要把 HTML 注释占位符留空
+
+脚本生成的 `AGENTS.md` 里有 `<!-- ... -->` 占位符，注意：
+
+- **Cursor** 会原样看到这些注释——无害但无用。
+- **Claude Code** 在把 CLAUDE.md / AGENTS.md 注入 context 前，会**剥离块级 HTML 注释**（[官方文档](https://code.claude.com/docs/en/memory)）。也就是说，如果某个章节你只留 `<!-- 添加你的规则 -->` 不填正文，**Claude Code 看到的就是一个空章节**。
+
+请把所有占位注释替换成真实内容。注释是脚手架，不是写给 Agent 看的指令。
+
 ## 常见问题
 
 **Q: 我需要指定技术栈吗？**
 A: 不需要。模板是语言无关的 — 根据你的技术栈填写即可。
 
 **Q: 我可以删除不需要的规则文件吗？**
-A: 可以。删除任何文件并更新 AGENTS.md 中的链接。
+A: 可以。直接删除文件即可。AGENTS.md 整体引用 `.agents/rules/` 目录，无需修改。
 
 **Q: 我可以添加更多规则文件吗？**
-A: 可以。在 `.agent/rules/` 中创建新的 `.md` 文件，并从 AGENTS.md 链接它们。
+A: 可以。直接在 `.agents/rules/` 中创建新的 `.md` 文件。Agent 会按需读取整个目录，AGENTS.md 不需要逐个列举。
+
+**Q: 为什么有一个只包含 `@AGENTS.md` 的 `CLAUDE.md`？**
+A: Claude Code 默认不会自动加载 `AGENTS.md`（[官方文档](https://code.claude.com/docs/en/memory)）。`@AGENTS.md` 这个 import 语法是官方推荐的桥接方式。Cursor、Copilot 等 Agent 会直接读取 `AGENTS.md`，不会用到 `CLAUDE.md`。
 
 ## 仓库
 

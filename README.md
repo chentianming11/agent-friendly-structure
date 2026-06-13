@@ -151,15 +151,6 @@ Practical implications:
 - ✅ **Put domain-specific rules in topic-named files**, not buried in a catch-all.
 - ⚠️ **Want a rule loaded every single session?** Inline it in `AGENTS.md` itself — that's the only thing both tools auto-load.
 
-### Don't leave the HTML-comment placeholders empty
-
-The script seeds `AGENTS.md` with `<!-- ... -->` placeholders. Note:
-
-- **Cursor** sees these comments as-is — harmless but pointless.
-- **Claude Code** strips block-level HTML comments before injecting CLAUDE.md/AGENTS.md into context ([official docs](https://code.claude.com/docs/en/memory)). That means if you leave a section as just `<!-- Add your rules -->`, **Claude Code sees an empty section**.
-
-Always replace the comment placeholders with real content. The comments are scaffolding, not actual instructions to the agent.
-
 ## FAQ
 
 **Q: Do I need to specify my tech stack?**

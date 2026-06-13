@@ -151,15 +151,6 @@ export async function fetchUser(id: string): Promise<User> {
 - ✅ **领域专属规则放进主题命名的文件**，不要堆进一个杂物篮。
 - ⚠️ **想让某条规则每次会话都被加载？** 把它直接写进 `AGENTS.md` 正文——那是两边工具唯一会自动加载的内容。
 
-### 不要把 HTML 注释占位符留空
-
-脚本生成的 `AGENTS.md` 里有 `<!-- ... -->` 占位符，注意：
-
-- **Cursor** 会原样看到这些注释——无害但无用。
-- **Claude Code** 在把 CLAUDE.md / AGENTS.md 注入 context 前，会**剥离块级 HTML 注释**（[官方文档](https://code.claude.com/docs/en/memory)）。也就是说，如果某个章节你只留 `<!-- 添加你的规则 -->` 不填正文，**Claude Code 看到的就是一个空章节**。
-
-请把所有占位注释替换成真实内容。注释是脚手架，不是写给 Agent 看的指令。
-
 ## 常见问题
 
 **Q: 我需要指定技术栈吗？**
